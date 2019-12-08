@@ -1,12 +1,11 @@
 private PoolGame gameObject;
-
+public static boolean DEBUG = true;
 void setup() {
-  size(720, 600);
-  gameObject =  new  PoolGame();
+  size(800, 600, P3D);
+  gameObject = new PoolGame(this);
 }
 
 void draw() {
-    
   gameObject.draw();
 }
 
