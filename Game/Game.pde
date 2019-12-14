@@ -1,5 +1,5 @@
 private PoolGame gameObject;
-public static boolean DEBUG = false;
+public static boolean DEBUG = true;
 public static float BALL_RADIUS = 10;
 void setup() {
   size(800, 600, P3D);

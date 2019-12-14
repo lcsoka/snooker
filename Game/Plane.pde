@@ -1,16 +1,30 @@
 public class Plane {
-  private PVector position = new PVector(0, 0, 0);
-  private float width = 500;
-  private float height = 500;
+  protected PVector position = new PVector(0, 0, 0);
+  protected PVector planeColor = new PVector(0, 155, 0);
+  protected float planeWidth = 500;
+  float planeHeight = 500;
 
   Plane(float size) {
-    this.width = size;
-    this.height = size;
+    this.planeWidth = size;
+    this.planeHeight = size;
   }
 
   Plane(float planeWidth, float planeHeight) {
-    this.width = planeWidth;
-    this.height = planeHeight;
+    this.planeWidth = planeWidth;
+    this.planeHeight = planeHeight;
+  }
+
+  Plane(PVector position, float planeWidth, float planeHeight) {
+    this.position = position;
+    this.planeWidth = planeWidth;
+    this.planeHeight = planeHeight;
+  }
+
+  Plane(PVector position, float planeWidth, float planeHeight, PVector planeColor) {
+    this.position = position;
+    this.planeWidth = planeWidth;
+    this.planeHeight = planeHeight;
+    this.planeColor = planeColor;
   }
 
   void update() {
@@ -18,16 +32,19 @@ public class Plane {
 
   void draw() {
 
-    float x = this.position.x + this.width / 2;
-    float z = this.position.z + this.height / 2;
-
-    // Table top
-    fill(0, 155, 0);
+    fill(planeColor.x, planeColor.y, planeColor.z);
+    pushMatrix();
     beginShape();
-    vertex(x, 0, z);
-    vertex(x, 0, -(z));
-    vertex(-(x), 0, -(z));
-    vertex(-(x), 0, z);
+    this.createShape();
     endShape(CLOSE);
+    popMatrix();
+  }
+
+  void createShape() {
+    translate(this.position.x, this.position.y, this.position.z);
+    vertex(this.planeWidth / 2, 0, this.planeHeight / 2);
+    vertex(this.planeWidth / 2, 0, - this.planeHeight / 2);
+    vertex(- this.planeWidth / 2, 0, - this.planeHeight / 2);
+    vertex(- this.planeWidth / 2, 0, this.planeHeight / 2);
   }
 }
