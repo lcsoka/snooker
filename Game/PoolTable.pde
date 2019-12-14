@@ -51,7 +51,7 @@ public class PoolTable {
 
   void draw() {
     noStroke();
-
+    lights();
     // Plane
     plane.draw();
 
@@ -73,4 +73,18 @@ public class PoolTable {
       line(0, 0, 0, 0, 0, planeSize);
     }
   }
+
+  public float getWidth() {
+    return this.poolSize.x;
+  }
+
+
+  public float getHeight() {
+    return this.poolSize.y;
+  }
+
+  public PVector getPosition() {
+    return this.position;
+  }
+ 
 }

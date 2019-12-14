@@ -1,5 +1,6 @@
 private PoolGame gameObject;
 public static boolean DEBUG = true;
+public static float GRAVITY = 10;
 void setup() {
   size(800, 600, P3D);
   gameObject = new PoolGame(this);
@@ -11,6 +12,10 @@ void draw() {
 
 void keyPressed() {
   gameObject.keyPressed();
+}
+
+void keyReleased() {
+  gameObject.keyReleased();
 }
 
 void mouseClicked() {
