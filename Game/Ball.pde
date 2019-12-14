@@ -3,17 +3,11 @@ public class Ball { //<>//
   private PVector position = new PVector(0, 0, 0); 
   private PVector ballColor = new PVector(255, 255, 255);
   private PVector direction = new PVector(1, 0, 0); // ALWAYS UNIT VECTOR
-  private PVector velocity = new PVector(0, 0, 0);
-  private PVector acceleration = new PVector(0, 0, 0);
-  private float radius = 10;
-  private PShape ball;
-  private int t = millis();
-  private float m = 10;
-  private float force = 10;
-  private float rotation = 0;
+  private PVector velocity = new PVector(0, 0, 0); 
+  private float radius = BALL_RADIUS;
+  private float t = millis();
   private float speed = 0;
-  private float friction = 0.005;
-  //private float friction = 0;
+  private float friction = 0.01;
   private float slowDownFactor = 1-friction;
 
   Ball() {
@@ -25,9 +19,9 @@ public class Ball { //<>//
     this.initializeShape();
   }
 
-  Ball(PVector position, float radius) {
+  Ball(PVector position, PVector bColor) {
     this.position = position;
-    this.radius = radius;
+    this.ballColor = bColor;
     this.initializeShape();
   }
 
@@ -35,28 +29,27 @@ public class Ball { //<>//
     shape = createShape(SPHERE, radius); 
     shape.setStroke(false);
     shape.setFill(color(ballColor.x, ballColor.y, ballColor.z));
+    this.rotate(0.01);
   }
 
   void update() {
-    int dT = millis() - t;
+    float dT = (millis() - t) / 10.0f;
     t = millis();
 
-    if (speed > 0.005) {
-      speed = Math.max(0, speed - speed * friction);
-    } else {
-      speed = 0;
-    }
+    //    if (speed > 0.005) {
+    //      speed = Math.max(0, speed - speed * friction);
+    //    } else {
+    //      speed = 0;
+    //    }
+
     this.velocity = this.velocity.copy().mult(slowDownFactor);
 
-    if (this.velocity.mag() > 0.05) {
-      this.position.add(this.velocity);
+    if (this.velocity.mag() > 0.005) {
+      this.position.add(this.velocity.copy().mult(dT));
     } else {
       this.velocity = new PVector(0, 0, 0);
     }
-    //float force = GRAVITY * this.mass;
 
-    //this.direction.x = this.direction.x * cos(rotation) - this.direction.z*sin(rotation);
-    //this.direction.z = -this.direction.x * sin(rotation) + this.direction.z*cos(rotation);
     if (this.velocity.mag() > 0 ) {
       this.direction = this.velocity.copy().normalize();
     }
@@ -104,7 +97,7 @@ public class Ball { //<>//
   }
 
   void loseSpeed(float percent) {
-    speed = speed - speed*(percent /100);
+    this.velocity.mult(1 - percent/100.0);
   }
 
   void rotate(float alpha) {
@@ -128,10 +121,11 @@ public class Ball { //<>//
     lights();
     pushMatrix();
     translate(position.x, position.y, position.z);
-    stroke(255, 255, 0);
-    PVector dir = direction.copy().mult(20);
-    line(0, 0, 0, dir.x, dir.y, dir.z);
-    fill(ballColor.x, ballColor.y, ballColor.z);
+    if (DEBUG) {
+      stroke(255, 255, 0);
+      PVector dir = direction.copy().mult(20);
+      line(0, 0, 0, dir.x, dir.y, dir.z);
+    }
     shape(shape);
     popMatrix();
   }
@@ -142,9 +136,7 @@ public class Ball { //<>//
 
   public void shoot() {
     println("shoot");
-    int dT = millis() - t;
-    t = millis();
-    float force = 5;
+    float force = 10;
     this.velocity = this.velocity.add(this.direction.normalize().copy().mult(force));
   }
 }

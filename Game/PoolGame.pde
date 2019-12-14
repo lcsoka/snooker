@@ -12,14 +12,29 @@ public class PoolGame {
     camera = new Camera();
     //cam = new PeasyCam(g, 1000);
     table = new PoolTable();
-    cueBall = new Ball(new PVector(0, -10, 0));
+    cueBall = new Ball(new PVector(-200, -10, 0));
     balls.add(cueBall);
     // Test
-    Ball ball = new Ball(new PVector(100, -10, 10));
-    ball.setColor(new PVector(192, 0, 0));
 
-    balls.add(ball);
-    //balls.add(new Ball(new PVector(250, -10, 0)));
+    generateBalls(new PVector(200, -10, 0));
+  }
+
+  void generateBalls(PVector loc) {
+    // Generate vectors used for moving when placing the balls
+    float theta = 1f / 6f * PI; // 30º
+    PVector rightUp = new PVector(cos(theta), 0, sin(theta));
+    rightUp.mult(BALL_RADIUS * 2);
+
+    PVector rightDown = new PVector(cos(theta), 0, -sin(theta));
+    rightDown.mult(BALL_RADIUS * 2);
+
+    for (int i = 0; i < 5; i++) { // Going up
+      for (int j = 0; j < 5 - i; j++) { // Going down
+        PVector ijLoc = rightUp.copy().mult(i).add(rightDown.copy().mult(j));
+        PVector ballLoc = loc.copy().add(ijLoc);
+        balls.add(new Ball(ballLoc, new PVector(random(255),random(255),random(255))));
+      }
+    }
   }
 
   public void draw() {
@@ -27,7 +42,6 @@ public class PoolGame {
     update();
 
     table.draw();
-    cueBall.draw();
     for (Ball b : balls) {
       b.draw();
     }
@@ -40,10 +54,16 @@ public class PoolGame {
     for (Ball b : balls) {
       checkBallWallCollision(b, table);
     }
-    checkBallCollision(cueBall, balls.get(1));
+
+    for (int i = 0; i < balls.size(); i++) {
+      for (int j = i; j < balls.size(); j++) {
+        if (balls.get(i) != balls.get(j)) {
+          checkBallCollision(balls.get(i), balls.get(j));
+        }
+      }
+    }
 
     table.update();
-    cueBall.update();
 
     for (Ball b : balls) {
       b.update();
@@ -105,29 +125,19 @@ public class PoolGame {
     PVector v2 = new PVector(b2.getVelocity().x, b2.getVelocity().z);
 
     //  // Two circles are intersecting
-
     if (Math.pow(a.x-b.x, 2) + Math.pow(a.y-b.y, 2) + Math.pow(a.z-b.z, 2) < Math.pow(ar+br, 2)) {
-      println("collide");
       // Set position to exactly one radius away
       PVector tempPos, correctPos;
+      b1.loseSpeed(2);
+      b2.loseSpeed(2);
 
-      //b1.setVelocity(new PVector(0, 0, 0));
-      //b2.setVelocity(new PVector(0, 0, 0));
-      //if (v1.mag() > v2.mag()) {
+      // Calculate correct position by getting de difference of the two points and adding two radius to the correct way
+      PVector dif = x2.copy().sub(x1);
+      tempPos = x2.add(dif.copy().normalize().mult(-1*ar*2));
+      correctPos = new PVector(tempPos.x, a.y, tempPos.y );
+      b1.setPosition(correctPos);
 
-        PVector dif = x2.copy().sub(x1);
-        tempPos = x2.add(dif.copy().normalize().mult(-1*ar*2));
-        correctPos = new PVector(tempPos.x, a.y, tempPos.y );
-        b1.setPosition(correctPos);
-      //} else {
-      //  tempPos = x2.add(v2.copy().normalize().mult(-1*br*2));
-      //  correctPos = new PVector(tempPos.x, b.y, tempPos.z);
-      //  b2.setPosition(correctPos);
-      //}
-
-
-
-
+      // Elastic collision
       float c = (v1.copy().sub(v2).dot(x1.copy().sub(x2))) / ((x1.copy().sub(x2)).mag() * (x1.copy().sub(x2)).mag());
       PVector b1Pos = v1.copy().sub(x1.copy().sub(x2).mult(c));
       float d = (v2.copy().sub(v1).dot(x2.copy().sub(x1))) / ((x2.copy().sub(x1)).mag() * (x2.copy().sub(x1)).mag());
@@ -150,7 +160,7 @@ public class PoolGame {
     } else if (key == 'd') {
       camera.moveRight(true);
     } else if (key == 'p') {
-      cueBall.setSpeed(2);
+      cueBall.setSpeed(5);
       cueBall.shoot();
     }
   }
