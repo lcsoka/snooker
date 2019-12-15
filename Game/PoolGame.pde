@@ -1,8 +1,8 @@
-import peasy.*;
+
 int planeSize = 500;
 public class PoolGame {
   Camera camera;
-  PeasyCam cam;
+  CatmullRom spline = new CatmullRom();
   PoolTable table;
   Ball cueBall;
   Cue cue;
@@ -10,6 +10,7 @@ public class PoolGame {
   Cone circle;
   float t;
   float shootTime;
+  float cameraT = 1.0;
   float idleStartTime = 0;
   float rotationSpeed = 0.05;
   float cueChangeSpeed = 1;
@@ -20,6 +21,7 @@ public class PoolGame {
   boolean hasMovingBall = false;
   boolean shooting = false;
   boolean shootStarted = false;
+  int cameraMode = 3;
 
   PoolGame(Game g) {
     camera = new Camera();
@@ -32,6 +34,21 @@ public class PoolGame {
     generateBalls(new PVector(200, -10, 0));
 
     cue = new Cue(new PVector(0, 0, 0), cueBall);
+
+    PVector p1 = new PVector(3, 0.8, 3).mult(200);
+    PVector p2 = new PVector(3, -0.4, -3).mult(200);
+    PVector p3 = new PVector(-3, 0.8, -3).mult(200);
+    PVector p4 = new PVector(-3, -0.2, 3).mult(200);
+
+    PVector boatPos = new PVector(0, -500, 0);
+
+    spline.AddControllPoint(boatPos.copy().add(p1));
+    spline.AddControllPoint(boatPos.copy().add(p2));
+    spline.AddControllPoint(boatPos.copy().add(p3));
+    spline.AddControllPoint(boatPos.copy().add(p4));
+    spline.AddControllPoint(boatPos.copy().add(p1));
+    spline.AddControllPoint(boatPos.copy().add(p2));
+    spline.AddControllPoint(boatPos.copy().add(p3));
   }
 
   void generateBalls(PVector loc) {
@@ -67,7 +84,28 @@ public class PoolGame {
   void update() {
     float dT = (millis() - t) / 10.0f;
     t = millis();
-    camera.update();
+    if (cameraMode == 1) {
+      camera.update();
+    } else if(cameraMode == 2) {
+      cameraT += 0.4 * dT / 100.0f;
+
+      if (cameraT > spline.bases.size() -2) {
+        cameraT = 1.0;
+      }    
+      int idx = (int)cameraT - 1;    
+      float t = cameraT - (int)cameraT + 1;
+
+      PVector cameraPos = spline.Eval(idx, t);
+
+      camera.eye = cameraPos;
+      camera.at = cueBall.getPosition().copy().add(0, -2, 0);    
+
+      camera.applyCamera();
+    } else if(cameraMode == 3) {
+      camera.eye = cueBall.getPosition().copy().add(0,-50,0).sub(cueBall.getDirection().copy().mult(200));
+      camera.at = cueBall.getPosition().copy().add(0, 50, 0);    
+      camera.applyCamera();
+    }
 
     // Collisions
     for (Ball b : balls) {
@@ -97,6 +135,7 @@ public class PoolGame {
     this.cue.setVisibility( !hasMovingBall);
 
     if (!hasMovingBall) {
+      cameraMode = 3;
       // Cue rotation
       if (this.isRightPressed) {
         this.cueBall.rotate(rotationSpeed);
@@ -118,6 +157,7 @@ public class PoolGame {
         this.idleStartTime = millis();
       }
     } else {
+      cameraMode = 2;
       this.idleStartTime = 0;
     }
 
