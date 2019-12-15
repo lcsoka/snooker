@@ -9,6 +9,7 @@ public class Ball { //<>//
   private float speed = 0;
   private float friction = 0.01;
   private float slowDownFactor = 1-friction;
+  private float force = 0;
 
   Ball() {
     this.initializeShape();
@@ -134,9 +135,13 @@ public class Ball { //<>//
     this.speed = 0;
   }
 
+  public void setForce(float force) {
+    this.force = force;
+  }
+
   public void shoot() {
     println("shoot");
-    float force = 10;
+
     this.velocity = this.velocity.add(this.direction.normalize().copy().mult(force));
   }
 }

@@ -8,7 +8,8 @@ abstract class ParametricSurface {
   abstract PVector getPos(float u, float v);
   abstract PVector getNormal(float u, float v);
 
-  void draw() {    
+  void draw() {  
+    noStroke();
     pushMatrix();
     translate(position.x, position.y, position.z);
     beginShape(TRIANGLES);

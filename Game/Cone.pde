@@ -1,28 +1,30 @@
-class Cylinder extends ParametricSurface {
-  private float r = 25;
-  private float h = 200;
+class Cone extends ParametricSurface {
+  private float r = 5;
+  
+  
+  private float h = 0;
 
-  Cylinder(float r, float h) {
+  Cone(float r) {
     this.r = r;
-    this.h = h;
   }
-  
-  Cylinder(PVector position) {
+
+  Cone(PVector position) {
     this.position = position;
   }
-  
-    
-  Cylinder(PVector position,float r, float h) {
+
+
+  Cone(PVector position, float r) {
     this.position = position;
+    this.r = r;
   }
 
   PVector getPos(float u, float v) {
     float alpha = u*2*PI;
-
+    
     return new PVector(
-      r*cos(alpha), 
+      r*(1-v)*cos(alpha), 
       v*h, 
-      r*sin(alpha)     
+      r*(1-v)*sin(alpha)      
       );
   }
 

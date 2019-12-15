@@ -5,8 +5,20 @@ public class PoolGame {
   PeasyCam cam;
   PoolTable table;
   Ball cueBall;
+  Cue cue;
   private ArrayList<Ball> balls = new ArrayList<Ball>();
-
+  Cone circle;
+  float t;
+  float shootTime;
+  float rotationSpeed = 0.05;
+  float cueChangeSpeed = 1;
+  boolean isRightPressed = false;
+  boolean isLeftPressed = false;
+  boolean isUpPressed = false;
+  boolean isDownPressed = false;
+  boolean hasMovingBall = false;
+  boolean shooting = false;
+  boolean shootStarted = false;
 
   PoolGame(Game g) {
     camera = new Camera();
@@ -17,6 +29,8 @@ public class PoolGame {
     // Test
 
     generateBalls(new PVector(200, -10, 0));
+
+    cue = new Cue(new PVector(0, 0, 0), cueBall);
   }
 
   void generateBalls(PVector loc) {
@@ -32,7 +46,7 @@ public class PoolGame {
       for (int j = 0; j < 5 - i; j++) { // Going down
         PVector ijLoc = rightUp.copy().mult(i).add(rightDown.copy().mult(j));
         PVector ballLoc = loc.copy().add(ijLoc);
-        balls.add(new Ball(ballLoc, new PVector(random(255),random(255),random(255))));
+        balls.add(new Ball(ballLoc, new PVector(random(255), random(255), random(255))));
       }
     }
   }
@@ -42,12 +56,15 @@ public class PoolGame {
     update();
 
     table.draw();
+    cue.draw();
     for (Ball b : balls) {
       b.draw();
     }
   }
 
   void update() {
+    float dT = (millis() - t) / 10.0f;
+    t = millis();
     camera.update();
 
     // Collisions
@@ -64,9 +81,55 @@ public class PoolGame {
     }
 
     table.update();
+    cue.update();
 
+
+    hasMovingBall = false;
     for (Ball b : balls) {
       b.update();
+      if (b.getVelocity().mag() > 0 ) {
+        hasMovingBall = true;
+      }
+    }
+
+    this.cue.setVisibility( !hasMovingBall);
+
+    if (!hasMovingBall) {
+      // Cue rotation
+      if (this.isRightPressed) {
+        this.cueBall.rotate(rotationSpeed);
+      }
+
+      if (this.isLeftPressed) {
+        this.cueBall.rotate(-rotationSpeed);
+      }
+
+      if (this.isUpPressed) {
+        this.cue.setDistance(-cueChangeSpeed);
+      }
+
+      if (this.isDownPressed) {
+        this.cue.setDistance(cueChangeSpeed);
+      }
+    }
+
+    //Animating shoot
+    if (this.shooting) {
+      float diff = millis() - shootTime;
+
+      if (!this.shootStarted) {
+        cueChangeSpeed = -1 * this.cue.getCueDistance() / 50 * dT;
+        this.shootStarted = true;
+      } else {
+        this.cue.setDistance(cueChangeSpeed);
+      }
+
+      if (diff > 500) {
+        this.shooting = false;
+        this.shootStarted = false;
+        cueChangeSpeed = 1;
+        this.shoot();
+      }
     }
   }
 
@@ -150,6 +213,19 @@ public class PoolGame {
     }
   }
 
+  public void startShooting() {
+    float dist = cue.getCueDistance();
+    float forcePercent = dist / cue.getMaxDistance();
+    cueBall.setForce(BALL_FORCE * forcePercent);
+    this.shootTime = millis();
+    this.shooting = true;
+  }
+
+  public void shoot() {
+    cueBall.setSpeed(5);
+    cueBall.shoot();
+  }
+
   public void keyPressed() {
     if (key == 'w') {
       camera.moveForward(true);
@@ -160,8 +236,19 @@ public class PoolGame {
     } else if (key == 'd') {
       camera.moveRight(true);
     } else if (key == 'p') {
-      cueBall.setSpeed(5);
-      cueBall.shoot();
+      this.startShooting();
+    } else if (key == 'v') {
+      cue.toggleVisibility();
+    } 
+
+    if (keyCode == RIGHT) {
+      this.isRightPressed = true;
+    } else if (keyCode == LEFT) {
+      this.isLeftPressed = true;
+    } else if (keyCode == UP) {
+      this.isUpPressed = true;
+    } else if (keyCode == DOWN) {
+      this.isDownPressed = true;
     }
   }
 
@@ -174,6 +261,16 @@ public class PoolGame {
       camera.moveLeft(false);
     } else if (key == 'd') {
       camera.moveRight(false);
+    }
+
+    if (keyCode == RIGHT) {
+      this.isRightPressed = false;
+    } else if (keyCode == LEFT) {
+      this.isLeftPressed = false;
+    } else if (keyCode == UP) {
+      this.isUpPressed = false;
+    } else if (keyCode == DOWN) {
+      this.isDownPressed = false;
     }
   }
 
