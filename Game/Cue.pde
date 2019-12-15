@@ -7,7 +7,7 @@ public class Cue {
   private Ball cueBall;
   private float distanceFromBall = 50;
   private float rotateX, rotateY, rotateZ = 0;
-  private float cueDistance = 0;
+  private float cueDistance = 50;
   private float maxCueDistance = 50;
 
   Cue(PVector position, Ball cueBall) {
@@ -47,12 +47,16 @@ public class Cue {
     this.visible = !this.visible;
   }
 
-  public void setDistance(float speed) {
+  public void changeDistance(float speed) {
    if(speed < 0) {
     this.cueDistance = Math.max(0,this.cueDistance += speed); 
    } else {
     this.cueDistance = Math.min(this.maxCueDistance,this.cueDistance += speed); 
    }
+  }
+  
+  public void setDistance(float distance) {
+   this.cueDistance = distance; 
   }
 
   public float getCueDistance() {

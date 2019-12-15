@@ -10,6 +10,7 @@ public class PoolGame {
   Cone circle;
   float t;
   float shootTime;
+  float idleStartTime = 0;
   float rotationSpeed = 0.05;
   float cueChangeSpeed = 1;
   boolean isRightPressed = false;
@@ -60,6 +61,7 @@ public class PoolGame {
     for (Ball b : balls) {
       b.draw();
     }
+    drawGUI();
   }
 
   void update() {
@@ -105,12 +107,18 @@ public class PoolGame {
       }
 
       if (this.isUpPressed) {
-        this.cue.setDistance(-cueChangeSpeed);
+        this.cue.changeDistance(-cueChangeSpeed);
       }
 
       if (this.isDownPressed) {
-        this.cue.setDistance(cueChangeSpeed);
+        this.cue.changeDistance(cueChangeSpeed);
       }
+
+      if (this.idleStartTime == 0) {
+        this.idleStartTime = millis();
+      }
+    } else {
+      this.idleStartTime = 0;
     }
 
     //Animating shoot
@@ -121,7 +129,7 @@ public class PoolGame {
         cueChangeSpeed = -1 * this.cue.getCueDistance() / 50 * dT;
         this.shootStarted = true;
       } else {
-        this.cue.setDistance(cueChangeSpeed);
+        this.cue.changeDistance(cueChangeSpeed);
       }
 
       if (diff > 500) {
@@ -129,10 +137,30 @@ public class PoolGame {
         this.shootStarted = false;
         cueChangeSpeed = 1;
         this.shoot();
+        this.cue.setDistance(this.cue.getMaxDistance());
+      }
+    }
+
+    if (this.idleStartTime > 0 && !this.hasMovingBall) {
+      float diff = millis() - this.idleStartTime;
+      println("Time elaplsed since last event: "+diff);
+      if (diff > IDLE_TIMEOUT * 1000) {
+        this.startShooting();
+        this.idleStartTime = 0;
       }
     }
   }
 
+  void drawGUI() {
+    if (this.idleStartTime > 0) {
+      int diff = 10 - Math.round((millis() - this.idleStartTime) / 1000);
+      hint(DISABLE_DEPTH_TEST);
+      camera();
+      textSize(26);
+      text("Remaining time: "+diff+"s", 10, 30);
+      hint(ENABLE_DEPTH_TEST);
+    }
+  }
 
   void checkBallWallCollision(Ball b, PoolTable table) {
     float topZ = table.getPosition().z - table.getHeight() / 2;
@@ -222,7 +250,6 @@ public class PoolGame {
   }
 
   public void shoot() {
-    cueBall.setSpeed(5);
     cueBall.shoot();
   }
 
@@ -241,14 +268,20 @@ public class PoolGame {
       cue.toggleVisibility();
     } 
 
-    if (keyCode == RIGHT) {
-      this.isRightPressed = true;
-    } else if (keyCode == LEFT) {
-      this.isLeftPressed = true;
-    } else if (keyCode == UP) {
-      this.isUpPressed = true;
-    } else if (keyCode == DOWN) {
-      this.isDownPressed = true;
+    if (!this.hasMovingBall) {
+      if (keyCode == RIGHT) {
+        this.isRightPressed = true;
+        this.idleStartTime = millis();
+      } else if (keyCode == LEFT) {
+        this.isLeftPressed = true;
+        this.idleStartTime = millis();
+      } else if (keyCode == UP) {
+        this.isUpPressed = true;
+        this.idleStartTime = millis();
+      } else if (keyCode == DOWN) {
+        this.isDownPressed = true;
+        this.idleStartTime = millis();
+      }
     }
   }
 
